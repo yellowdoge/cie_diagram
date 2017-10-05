@@ -479,24 +479,26 @@ function [x,y] = cie_diagram()
   x=X./(X+Y+Z);
   y=Y./(X+Y+Z);
 
-                      # Add an extra row with the original coordinate.
+  # Add an extra row with the original coordinate, this allows for
+  # "closing" the outer curve delimiting the plot.
   x=[x; x(1)];
   y=[y; y(1)];
 
-
-  eve=[0.6396, 0.3291; 0.2998, 0.5996; 0.1494, 0.0595];
-  eve=[eve; eve(1,:)];
-
-  z32x=[0.6738, 0.3164; 0.1962, 0.7197; 0.1484, 0.0439];
-  z32x=[z32x; z32x(1,:)];
-
   hold on;
   plot(x,y, 'linewidth', 2);
+
   grid;
   axis([0.0 1.0 0.0 1.0])
   axis equal;
+
+  eve=[0.6396, 0.3291; 0.2998, 0.5996; 0.1494, 0.0595];
+  eve=[eve; eve(1,:)];
   plot(eve(:,1), eve(:,2), 'k*-', 'linewidth', 2);
+
+  z32x=[0.6738, 0.3164; 0.1962, 0.7197; 0.1484, 0.0439];
+  z32x=[z32x; z32x(1,:)];
   plot(z32x(:,1), z32x(:,2), 'k+-', 'linewidth', 2);
+
   legend('cie', 'eve', 'HP z32x');
 
 endfunction
