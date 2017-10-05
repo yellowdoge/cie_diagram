@@ -6,40 +6,44 @@ function colorize(x_in, y_in)
   assert(length(x_in) == length(y_in));
 
   # Throw away K-1 input samples, for speed.
-  K = 2
+  K = 2;
   x = x_in(1:K:length(x_in));
   y = y_in(1:K:length(y_in));
   N = length(x);
-  # Output matrix of xy coordinates and corresponding rgb color.
-  xyrgb = zeros(N*steps*4, 5, 'double');
 
-  # "center" of the radial slices, coordinates: {e, e}
-  e = 0.4;
+  # "center" of the radial slices, in x,y coordinates.
+  e_x = 0.6;
+  e_y = 0.3;
   # Amount of radial steps, i.e. from center to outside line.
   steps = 4;
 
-  i = 1;  
+  # Output matrix of xy coordinates and corresponding rgb color.
+  xyrgb = zeros(N*steps*4, 5, 'double');
+
+  i = 1;
   for w = 1:N                                  % wavelength
     w2 = mod(w, N)+1;
-    a1 = atan2(y(w)  -e, x(w)  -e);            % start angle
-    a2 = atan2(y(w2) -e, x(w2) -e);            % end angle
-    r1 = ((x(w)  - e)^2 + (y(w)  - e)^2)^0.5;  % start radius
-    r2 = ((x(w2) - e)^2 + (y(w2) - e)^2)^0.5;  % end radius
-    for c = 1:steps                            % colourfulness
-      % patch polygon
-      xyz(1,1) = e+r1*cos(a1)*c/steps;
-      xyz(1,2) = e+r1*sin(a1)*c/steps;
+    # Start and end angle
+    a1 = atan2(y(w)  -e_y, x(w)  -e_x);
+    a2 = atan2(y(w2) -e_y, x(w2) -e_x);
+    # Start and end radius.
+    r1 = ((x(w)  - e_x)^2 + (y(w)  - e_y)^2)^0.5;
+    r2 = ((x(w2) - e_x)^2 + (y(w2) - e_y)^2)^0.5;
+    for c = 1:steps
+      xyz(1,1) = e_x + r1 * cos(a1) * c/steps;
+      xyz(1,2) = e_y + r1 * sin(a1) * c/steps;
       xyz(1,3) = 1 - xyz(1,1) - xyz(1,2);
-      
-      xyz(2,1) = e+r1*cos(a1)*(c-1)/steps;
-      xyz(2,2) = e+r1*sin(a1)*(c-1)/steps;
+
+      xyz(2,1) = e_x + r1 * cos(a1) * (c-1)/steps;
+      xyz(2,2) = e_y + r1 * sin(a1) * (c-1)/steps;
       xyz(2,3) = 1 - xyz(2,1) - xyz(2,2);
-      
-      xyz(3,1) = e+r2*cos(a2)*(c-1)/steps;
-      xyz(3,2) = e+r2*sin(a2)*(c-1)/steps;
+
+      xyz(3,1) = e_x + r2 * cos(a2) * (c-1)/steps;
+      xyz(3,2) = e_y + r2 * sin(a2) * (c-1)/steps;
       xyz(3,3) = 1 - xyz(3,1) - xyz(3,2);
-      xyz(4,1) = e+r2*cos(a2)*c/steps;
-      xyz(4,2) = e+r2*sin(a2)*c/steps;
+
+      xyz(4,1) = e_x + r2 * cos(a2) * c/steps;
+      xyz(4,2) = e_y + r2 * sin(a2) * c/steps;
       xyz(4,3) = 1 - xyz(4,1) - xyz(4,2);
       % compute sRGB for vertices
       rgb = xyz2srgb(xyz');
@@ -49,18 +53,20 @@ function colorize(x_in, y_in)
       i = i + 4;
     end
   end
-  
+
   [rows cols] = size(xyrgb);
   for i = 1:4:rows
     patch(xyrgb(i:i+3 ,1), xyrgb(i:i+3 ,2), 'FaceVertexCData', xyrgb(i:i+3,3:5),
-	  'Edgecolor', 'none', 'FaceColor', 'interp');
+          'Edgecolor', 'none', 'FaceColor', 'interp');
   end
 
 end
 
 
 function [rgb] = xyz2srgb(xyz)
-    M = [ 3.2406 -1.5372 -0.4986; -0.9689 1.8758 0.0415; 0.0557 -0.2040 1.0570 ];
+    M = [ 3.2406 -1.5372 -0.4986;
+          -0.9689 1.8758 0.0415;
+          0.0557 -0.2040 1.0570 ];
     [rows cols ] = size(xyz);
     rgb = M*xyz;
     for c = 1:cols
